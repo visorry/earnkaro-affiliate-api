@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  earnkaro-api:
+    build: .
+    container_name: earnkaro-affiliate-api
+    ports:
+      - "7777:7777"
+    environment:
+      - EARNKARO_EMAIL=${EARNKARO_EMAIL}
+      - EARNKARO_PASSWORD=${EARNKARO_PASSWORD}
+      - PORT=7777
+      - HEADLESS=true
+    volumes:
+      # Persist sessions directory across container restarts
+      - sessions-data:/app/sessions
+      # Optional: mount .env file if you prefer
+      # - ./.env:/app/.env:ro
+    restart: unless-stopped
+    # Security options
+    security_opt:
+      - seccomp:unconfined
+    # Shared memory size for Chrome
+    shm_size: '2gb'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7777/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  # Named volume for session persistence
+  sessions-data:
+    driver: local

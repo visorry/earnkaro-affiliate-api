@@ -1,0 +1,18 @@
+{
+  "name": "earnkaro-affiliate-api",
+  "version": "1.0.0",
+  "description": "Express API server for automating EarnKaro affiliate link generation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["earnkaro", "affiliate", "automation", "puppeteer"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^21.0.0",
+    "dotenv": "^16.3.1"
+  }
+}

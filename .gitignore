@@ -1,0 +1,10 @@
+node_modules/
+.env
+sessions/
+*.log
+.DS_Store
+*.png
+test-*.js
+debug.js
+inspect-*.js
+docker-compose.override.yml

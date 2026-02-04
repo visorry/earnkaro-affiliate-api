@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+TESTING.md
+.env
+sessions
+*.png
+*.log
+test-*.js
+debug.js
+inspect-*.js
+.DS_Store
