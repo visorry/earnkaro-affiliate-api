@@ -42,14 +42,8 @@ COPY . .
 # Create sessions directory
 RUN mkdir -p /app/sessions && chmod 777 /app/sessions
 
-# Install Chromium and find the path
-RUN npx puppeteer browsers install chrome && \
-    CHROME_PATH=$(find /root/.cache/puppeteer/chrome -name chrome -type f | head -n 1) && \
-    echo "Found Chrome at: $CHROME_PATH" && \
-    ln -sf $CHROME_PATH /usr/local/bin/chrome
-
-# Set environment to use the linked Chrome
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome
+# Install Chromium - Puppeteer will find it automatically
+RUN npx puppeteer browsers install chrome
 
 # Expose port
 EXPOSE 7777

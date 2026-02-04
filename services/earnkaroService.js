@@ -21,11 +21,10 @@ class EarnKaroService {
     try {
       console.log('Initializing browser...');
 
-      // Use system Chrome on Mac, or Puppeteer's Chromium on Linux/Docker
-      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH ||
-        (process.platform === 'darwin'
-          ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-          : null);
+      // Use system Chrome on Mac, Puppeteer finds Chrome automatically on Linux
+      const executablePath = process.platform === 'darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : undefined; // Let Puppeteer find Chrome automatically
 
       this.browser = await puppeteer.launch({
         executablePath: executablePath,
