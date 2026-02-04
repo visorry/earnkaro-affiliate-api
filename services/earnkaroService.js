@@ -287,11 +287,11 @@ class EarnKaroService {
 
       // Navigate to link creation page
       await this.page.goto('https://earnkaro.com/create-earn-link', {
-        waitUntil: 'domcontentloaded',
-        timeout: 30000
+        waitUntil: 'networkidle0',
+        timeout: 60000
       });
 
-      await this.page.waitForTimeout(2000);
+      await this.page.waitForTimeout(3000);
 
       // Find the correct URL input field by ID
       const urlInput = await this.page.$('#deallink');
@@ -317,7 +317,7 @@ class EarnKaroService {
       console.log('Button clicked, waiting for result dialog...');
 
       // Wait for the link to be generated and dialog to appear
-      await this.page.waitForTimeout(6000);
+      await this.page.waitForTimeout(8000);
 
       // Find and click the COPY LINK button
       const copyButtons = await this.page.$x("//button[contains(text(), 'COPY LINK')]");
