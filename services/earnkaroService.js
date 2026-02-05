@@ -320,27 +320,100 @@ class EarnKaroService {
       // Wait for the link to be generated and dialog to appear
       await this.page.waitForTimeout(8000);
 
-      // Find and click the COPY LINK button
+      // Find the COPY LINK button area - the link should be displayed nearby
       const copyButtons = await this.page.$x("//button[contains(text(), 'COPY LINK')]");
       if (copyButtons.length === 0) {
         throw new Error('Could not find "COPY LINK" button. Link generation may have failed.');
       }
 
-      console.log('Found COPY LINK button, clicking to copy...');
-      await copyButtons[0].click();
-      await this.page.waitForTimeout(1000);
+      console.log('Found COPY LINK button, extracting link...');
 
-      // Read the affiliate link from clipboard
-      const affiliateLink = await this.page.evaluate(async () => {
-        try {
-          return await navigator.clipboard.readText();
-        } catch (e) {
-          throw new Error('Unable to read clipboard: ' + e.message);
+      // Try multiple methods to extract the link
+      let affiliateLink = null;
+
+      // Method 1: Find link in the dialog/modal that appears
+      affiliateLink = await this.page.evaluate(() => {
+        // The link appears as text in the dialog before the "Share" section
+        // Look for the link text (fktr.in or myntr.it)
+        const allText = document.body.innerText;
+
+        // Extract fktr.in or myntr.it links
+        const fktrMatch = allText.match(/(https?:\/\/fktr\.in\/[A-Za-z0-9]+)/);
+        const myntrMatch = allText.match(/(https?:\/\/myntr\.it\/[A-Za-z0-9]+)/);
+
+        if (fktrMatch) return fktrMatch[1];
+        if (myntrMatch) return myntrMatch[1];
+
+        // Also check near the COPY LINK button
+        const copyBtn = document.evaluate(
+          "//button[contains(text(), 'COPY LINK')]",
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null
+        ).singleNodeValue;
+
+        if (copyBtn) {
+          const container = copyBtn.closest('div');
+          if (container) {
+            // Check for input fields
+            const inputs = container.querySelectorAll('input[readonly], input[value*="http"]');
+            for (const input of inputs) {
+              if (input.value && input.value.startsWith('http')) {
+                return input.value;
+              }
+            }
+
+            // Check for divs or spans with the link
+            const linkElements = container.querySelectorAll('[class*="link"], [id*="link"]');
+            for (const el of linkElements) {
+              const text = el.textContent.trim();
+              if (text.startsWith('http')) {
+                return text;
+              }
+            }
+
+            // Check container text
+            const textContent = container.textContent;
+            const urlMatch = textContent.match(/(https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+              return urlMatch[1].replace(/[,\s]+$/, ''); // Remove trailing punctuation
+            }
+          }
         }
+        return null;
       });
 
+      // Method 2: Check for common selectors
+      if (!affiliateLink) {
+        const selectors = [
+          'input[readonly][value*="fktr"]',
+          'input[readonly][value*="myntr"]',
+          'input[value*="fktr.in"]',
+          'input[value*="myntr.it"]',
+          '.profit-link',
+          '#generated-link'
+        ];
+
+        for (const selector of selectors) {
+          try {
+            const element = await this.page.$(selector);
+            if (element) {
+              affiliateLink = await this.page.evaluate(el => el.value || el.textContent, element);
+              if (affiliateLink && affiliateLink.startsWith('http')) {
+                break;
+              }
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+
       if (!affiliateLink || !affiliateLink.startsWith('http')) {
-        throw new Error('Invalid affiliate link retrieved from clipboard');
+        // Take a screenshot for debugging
+        await this.page.screenshot({ path: './debug-screenshot.png' });
+        throw new Error('Could not extract affiliate link from page');
       }
 
       console.log('✓ Affiliate link generated successfully');
