@@ -37,7 +37,8 @@ class EarnKaroService {
           '--disable-gpu'
         ],
         userDataDir: './sessions', // Save session for persistent auth
-        ignoreHTTPSErrors: true
+        ignoreHTTPSErrors: true,
+        protocolTimeout: 180000 // 3 minutes timeout
       });
 
       this.page = await this.browser.newPage();
